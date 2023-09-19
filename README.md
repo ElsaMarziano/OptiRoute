@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # my-tyul
 A simple project in React to help you plan your trip
 =======
@@ -73,3 +74,7 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
 >>>>>>> fc1696d (Initialize project using Create React App)
+=======
+# my-tyul
+A simple project in React to help you plan your trip
+>>>>>>> 621317482f636de29d80e41f2f1c3353b366de82
