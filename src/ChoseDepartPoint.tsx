@@ -1,20 +1,42 @@
 import React, { useRef, useState } from "react";
 
+import { Button } from "@mui/material";
 
+import PrettyAutocomplete from "./PrettyAutocomplete.tsx";
 
-function ChoseDepartPoint(): JSX.Element {
-
+function ChoseDepartPoint(props: {
+  goToNextStep: Function;
+  handlePlaceSelected: Function;
+  disabled: boolean;
+}): JSX.Element {
+  const { goToNextStep, handlePlaceSelected, disabled } = props;
 
   return (
-    <div className='main'>
-        <div className="overlay"></div>
-        <video src="../media/video-bg.mp4" autoPlay loop muted />
-        <div className="content">
-            <h1>Welcome to Optiroute</h1>
-            <p>To my site.</p>
-        </div>
+    <div className="main">
+      <div className="overlay"></div>
+      <video src={require("./media/video-bg.mp4")} autoPlay loop muted />
+      <div className="content">
+        <h1 className="element">Welcome to Optiroute</h1>
+        <p className="element">
+          Let's help you plan your trip! Please enter the address of your
+          departure point.
+        </p>
+        
+        <PrettyAutocomplete onSelect={handlePlaceSelected} />
+
+          <Button
+          style={{visibility: disabled? "hidden" : "visible"}}
+            variant="contained"
+            color="success"
+            size="large"
+            onClick={() => {if(!disabled) goToNextStep()}}
+          >
+            Let's go!
+          </Button>
+
+      </div>
     </div>
-  )
+  );
 }
 
 export default ChoseDepartPoint;

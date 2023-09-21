@@ -1,56 +1,93 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./App.css";
 
-import GoogleMapReact from "google-map-react";
-import Autocomplete from "react-google-autocomplete"
-import { Button, Grid } from "@mui/material";
+import GoogleMap from "google-maps-react-markers";
+import { Button, Chip, Grid } from "@mui/material";
+import {
+  NorthWestSharp as NorthWestSharpIcon,
+  WhereToVote as WhereToVoteIcon,
+} from "@mui/icons-material";
 
-const GOOGLE_API_KEY = 'AIzaSyAMuN4NytblrM7MdkXlVu9-j2kt_dFVG4Y';
+import PrettyAutocomplete from "./PrettyAutocomplete.tsx";
+import { GOOGLE_API_KEY, place } from "./Consts.tsx";
 
-function MapPage(): JSX.Element {
-  const [locations, setLocations] = useState([])
+function MapPage(props: { departPoint: any }): JSX.Element {
+  const [locations, setLocations] = useState({});
+  const { departPoint } = props;
+  const [center, setCenter] = useState({
+    lat: departPoint.geometry.location.lat(),
+    lng: departPoint.geometry.location.lng(),
+  });
 
-  const defaultProps = {
-    center: {
-      lat: 10.99835602,
-      lng: 77.01502627,
-    },
-    zoom: 11,
+  //   useEffect(() => {
+  // console.log("locations", locations)
+  //   }, [locations])
+
+  const addLocation = (location: place) => {
+    setLocations({ ...locations, [location.place_id]: location });
   };
 
-
-  return (
-    // Important! Always set the container height explicitly ( required by the google-map-react library)
-    <Grid container style={{ height: "100vh", width: "100%" }}>
-      
-      <Grid item xs={4}>
-        Let's help you plan your trip! Please enter your departure point.
-        <Autocomplete
-        style={{width: "60%", height:"3vh",margin:"1vh"}}
-          apiKey={GOOGLE_API_KEY}
-          onPlaceSelected={(place) => console.log(place)}
-        />
-        <Button>Add location</Button>
-        <Button>Generate path</Button>
-      </Grid>
-
-
-      <Grid item xs={8}>
-        <GoogleMapReact
-          bootstrapURLKeys={{ key: GOOGLE_API_KEY, libraries:['places']
-        }}
-          defaultCenter={defaultProps.center}
-          defaultZoom={defaultProps.zoom}
+  if (departPoint) {
+    return (
+      // Important! Always set the container height explicitly ( required by the google-map-react library)
+      <Grid container style={{ height: "100vh", width: "100%" }}>
+        {/* Add locations */}
+        <Grid
+          item
+          xs={4}
+          style={{
+            padding: "2vh",
+            backgroundImage: `url('./media/image-bg.jpg')`,
+            backgroundSize: "cover",
+          }}
         >
-           {/* <ReactComponent
-          lat={59.955413}
-          lng={30.337844}
-          text="My Marker"
-          />   */}
-        </GoogleMapReact>
+          <p className="element">
+            Enter the locations you would like to visit. When you're done, click
+            "Generate path".
+          </p>
+          <PrettyAutocomplete onSelect={(place: any) => addLocation(place)} />
+          <Button>Add location</Button>
+          <div>
+            {(Object.values(locations) as place[]).map((value) => (
+              <Chip
+                label={value.formatted_address}
+                onDelete={addLocation}
+                onClick={(event) => setCenter({ lat: 0, lng: 0 })}
+                color={"success"}
+              />
+            ))}
+          </div>
+          <Button>Generate path</Button>
+        </Grid>
+
+        {/* Map */}
+        <Grid item xs={8}>
+          <GoogleMap
+            apiKey={GOOGLE_API_KEY}
+            defaultCenter={center}
+            defaultZoom={13}
+          >
+            <MyWhereToVoteIcon
+              lat={departPoint.geometry.location.lat()}
+              lng={departPoint.geometry.location.lng()}
+            />
+
+            {(Object.values(locations) as place[]).map((value) => (
+              <MyWhereToVoteIcon
+                key={value.place_id} // Add a unique key if necessary
+                lat={value.geometry.location.lat()}
+                lng={value.geometry.location.lng()}
+              />
+            ))}
+          </GoogleMap>
+        </Grid>
       </Grid>
-    </Grid>
-  );
+    );
+  } else return <div />;
 }
+
+const MyWhereToVoteIcon = (props: any) => {
+  return <NorthWestSharpIcon color="warning" fontSize="large" />;
+};
 
 export default MapPage;

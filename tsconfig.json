@@ -14,9 +14,9 @@
       "sourceMap": true, 
       "moduleResolution": "node",
       "noEmit": true,
-      "allowImportingTsExtensions": true
+      "allowImportingTsExtensions": true,
     },
-    "include": ["src/**/*.tsx"], // Specify the files to include in compilation
+    "include": ["src/**/*.tsx", "src/**/*.ts"], // Specify the files to include in compilation
     "exclude": ["node_modules"]                  // Specify the files to exclude from compilation
 }
   
