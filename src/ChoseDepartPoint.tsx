@@ -16,13 +16,13 @@ function ChoseDepartPoint(props: {
       <div className="overlay"></div>
       <video src={require("./media/video-bg.mp4")} autoPlay loop muted />
       <div className="content">
-        <h1 className="element">Welcome to Optiroute</h1>
+        <h1 className="element">Welcome to OptiRoute</h1>
         <p className="element">
           Let's help you plan your trip! Please enter the address of your
           departure point.
         </p>
-        
-        <PrettyAutocomplete onSelect={handlePlaceSelected} />
+
+        <PrettyAutocomplete onSelect={handlePlaceSelected} onEnter={goToNextStep}/>
 
           <Button
           style={{visibility: disabled? "hidden" : "visible"}}

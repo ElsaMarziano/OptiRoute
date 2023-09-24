@@ -11,8 +11,8 @@ function App(): JSX.Element {
     <MapPage departPoint={departPoint} />
   ) : (
     <ChoseDepartPoint
-      goToNextStep={() => setIsDepartChosen(true)}
-      handlePlaceSelected={(place:any) => {console.log(place); setDepartPoint(place)}}
+      goToNextStep={() => {setIsDepartChosen(true)}}
+      handlePlaceSelected={(place:any) => { setDepartPoint(place)}}
       disabled={Object.keys(departPoint).length == 0}
     />
   );

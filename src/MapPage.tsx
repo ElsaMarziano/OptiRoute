@@ -19,11 +19,12 @@ function MapPage(props: { departPoint: any }): JSX.Element {
     lng: departPoint.geometry.location.lng(),
   });
 
-  //   useEffect(() => {
-  // console.log("locations", locations)
-  //   }, [locations])
+    useEffect(() => {
+  console.log("locations", locations)
+    }, [locations])
 
   const addLocation = (location: place) => {
+    console.log(locations)
     setLocations({ ...locations, [location.place_id]: location });
   };
 
@@ -45,11 +46,12 @@ function MapPage(props: { departPoint: any }): JSX.Element {
             Enter the locations you would like to visit. When you're done, click
             "Generate path".
           </p>
-          <PrettyAutocomplete onSelect={(place: any) => addLocation(place)} />
+          <PrettyAutocomplete onSelect={(place: any) => addLocation(place)} onEnter={(place: any) => addLocation(place)} />
           <Button>Add location</Button>
           <div>
             {(Object.values(locations) as place[]).map((value) => (
               <Chip
+                key={value.place_id}
                 label={value.formatted_address}
                 onDelete={addLocation}
                 onClick={(event) => setCenter({ lat: 0, lng: 0 })}
