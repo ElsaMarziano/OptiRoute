@@ -43,6 +43,14 @@ video {
   color: white;
 }
 
+.functional-content {
+  position: absolute;
+  width: 30%;
+  height: 90vh;
+  color: white;
+  overflow: hidden
+}
+
 
 .overlay {
   position: absolute;
@@ -56,6 +64,7 @@ video {
 
 .element {
   margin-bottom: 3vh;
+  color: white;
 }
 
 h1{
