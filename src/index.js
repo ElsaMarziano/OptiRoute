@@ -5,7 +5,7 @@ import App from './App.tsx';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-{/* <script src="https://maps.googleapis.com/maps/api/js?key=<AIzaSyAMuN4NytblrM7MdkXlVu9-j2kt_dFVG4Y>&libraries=places&callback=initMap"async></script> */}
+<script src="https://maps.googleapis.com/maps/api/js?key=<AIzaSyAMuN4NytblrM7MdkXlVu9-j2kt_dFVG4Y>&libraries=places&callback=initMap"async></script>
 
 
 

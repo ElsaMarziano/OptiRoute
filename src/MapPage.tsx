@@ -23,10 +23,27 @@ const styles = {
 
 function MapPage(props: { departPoint: any }): JSX.Element {
   const [locations, setLocations] = useState<{ [key: string]: place }>({});
+  const waypoints: google.maps.DirectionsWaypoint[] = [];
   const mapRef = useRef<any | null>(null); // Type any because can't resolve google.map.Maps
   const { departPoint } = props;
-  const directionsService = new google.maps.DirectionsService();
-  const directionsRenderer = new google.maps.DirectionsRenderer();
+  const [directionsService, setDirectionsService] =
+    useState<google.maps.DirectionsService | null>(null);
+  const [directionsRenderer, setDirectionsRenderer] =
+    useState<google.maps.DirectionsRenderer | null>(null);
+    
+
+  function initialize_map(map: google.maps.Map) {
+    setDirectionsService(new google.maps.DirectionsService());
+    setDirectionsRenderer(new google.maps.DirectionsRenderer());
+    mapRef.current = map;
+    directionsRenderer?.setMap(map);
+  }
+
+  useEffect(() => { // Make sure directionsRenderer.getMap() is never null
+    if (directionsRenderer && mapRef.current) {
+      directionsRenderer.setMap(mapRef.current);
+    }
+  }, [directionsRenderer, mapRef.current]);
 
   function addLocation(location: place) {
     setLocations((prev_locations) => ({
@@ -40,36 +57,87 @@ function MapPage(props: { departPoint: any }): JSX.Element {
     delete new_locations[location.place_id];
     setLocations(new_locations);
   }
-  
 
-  function generatePath() {
-    if (Object.keys(locations).length == 0) return;
-    let current: place = departPoint;
-    let not_visited: { [key: string]: place } = { ...locations }; // Places we haven't visited yet, update while we go through loop
-    while (Object.keys(not_visited).length > 0) {
+  async function choose_next_location(
+    current: place,
+    not_visited: { [key: string]: place }
+  ) {
+    let shortest_result: google.maps.DirectionsResult | null = null;
+    let shortest_id: string = "";
 
-      let distances: { [key: string]: number} = {};
-      
-      (Object.values(not_visited) as place[]).forEach((value) => {
-      directionsService.route(
-        {
-          origin: {lat: current.geometry.lat(), lng: current.geometry.lng()},
-          destination: {lat: value.geometry.lat(), lng: value.geometry.lng()},
-          // travelMode: google.maps.TravelMode.DRIVING
-        },
-        (result, status) => {
-          if (status === google.maps.DirectionsStatus.OK) {
-            // directionsRenderer.setDirections(result);
-            distances[value.place_id] = result.routes[0].legs[0].distance.value
-            console.log(value.formatted_address, distances[value.place_id])
-          } else {
-            console.error(`error fetching directions ${result}`);
+    const fetchDirections = async (value: place) => {
+      return new Promise<void>((resolve) => {
+        // setTimeout(() => {
+        directionsService?.route(
+          {
+            origin: {
+              lat: current.geometry.location.lat(),
+              lng: current.geometry.location.lng(),
+            },
+            destination: {
+              lat: value.geometry.location.lat(),
+              lng: value.geometry.location.lng(),
+            },
+            travelMode: google.maps.TravelMode.WALKING
+            },
+          (result, status) => {
+            if (status === google.maps.DirectionsStatus.OK) {
+              if (
+                !shortest_result ||
+                shortest_result.routes[0].legs[0].distance.value >
+                  result.routes[0].legs[0].distance.value
+              ) {
+                shortest_result = result;
+                shortest_id = value.place_id;
+              }
+            }
+            resolve();
           }
-        }
-      );
+        );
+        // }, 0);
+      });
+    };
+
+    await Promise.all(
+      Object.values(not_visited).map(async (value: place) => {
+        await fetchDirections(value);
       })
-not_visited={}
+    );
+    return { shortest_id, shortest_result };
+  }
+
+  async function generatePath() {
+    if (Object.keys(locations).length === 0) return;
+    let current: place = { ...departPoint };
+    let not_visited: { [key: string]: place } = { ...locations };
+
+    while (Object.keys(not_visited).length > 0) {
+      let response = await choose_next_location(current, not_visited);
+      current = { ...not_visited[response.shortest_id] };
+      waypoints.push({location: current.formatted_address})
+      delete not_visited[response.shortest_id];
     }
+
+    directionsService?.route(
+      {
+        origin: {
+          lat: departPoint.geometry.location.lat(),
+          lng: departPoint.geometry.location.lng(),
+        },
+        destination: {
+          lat: current.geometry.location.lat(),
+          lng: current.geometry.location.lng(),
+        },
+        waypoints: waypoints,
+        travelMode: google.maps.TravelMode.WALKING
+        },
+      (result, status) => {
+        if (status === google.maps.DirectionsStatus.OK) {
+          directionsRenderer?.setDirections(result);        
+        }
+      }
+    );
+ 
   }
 
   if (departPoint) {
@@ -132,7 +200,7 @@ not_visited={}
               lng: departPoint.geometry.location.lng(),
             }}
             defaultZoom={13}
-            onGoogleApiLoaded={({ map, maps }: any) => (mapRef.current = map)}
+            onGoogleApiLoaded={({ map, maps }: any) => initialize_map(map)}
           >
             <MyWhereToVoteIcon
               lat={departPoint.geometry.location.lat()}
