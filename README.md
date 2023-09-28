@@ -7,3 +7,4 @@ Ideas for future development:
 - Allow user to choose between walking, driving, bike and transit (as of now, only walking is available)
 - Suggest places to see near the path (costs money as of now)
 - Make the interface responsive to phone users
+- Allow user to choose a finish point and calculate path accordingly (doable with google API)
