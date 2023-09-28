@@ -1,19 +1,20 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import "./App.css";
 import MapPage from "./MapPage.tsx";
 import ChoseDepartPoint from "./ChoseDepartPoint.tsx";
+import {place} from "./Consts.tsx"
 
 function App(): JSX.Element {
   const [isDepartChosen, setIsDepartChosen] = useState(false);
-  const [departPoint, setDepartPoint] = useState({});
+  const [departPoint, setDepartPoint] = useState<place | null>(null);
 
-  return isDepartChosen ? (
+  return isDepartChosen  && departPoint ? (
     <MapPage departPoint={departPoint} />
   ) : (
     <ChoseDepartPoint
       goToNextStep={() => {setIsDepartChosen(true)}}
-      handlePlaceSelected={(place:any) => { setDepartPoint(place)}}
-      disabled={Object.keys(departPoint).length == 0}
+      handlePlaceSelected={(place:place) => { setDepartPoint(place)}}
+      disabled={departPoint == null}
     />
   );
 }

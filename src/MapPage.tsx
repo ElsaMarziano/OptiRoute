@@ -21,18 +21,24 @@ const styles = {
   },
 };
 
-function MapPage(props: { departPoint: any }): JSX.Element {
+function MapPage(props: { departPoint: place }): JSX.Element {
   const [locations, setLocations] = useState<{ [key: string]: place }>({});
   const waypoints: google.maps.DirectionsWaypoint[] = [];
   const mapRef = useRef<any | null>(null); // Type any because can't resolve google.map.Maps
   const { departPoint } = props;
+  const country = departPoint.address_components.find((component: {types: string[]}) =>
+    component.types.some(type => type === 'country'))?.short_name;
+
+
+
   const [directionsService, setDirectionsService] =
     useState<google.maps.DirectionsService | null>(null);
   const [directionsRenderer, setDirectionsRenderer] =
     useState<google.maps.DirectionsRenderer | null>(null);
-    
+
 
   function initialize_map(map: google.maps.Map) {
+    console.log(departPoint)
     setDirectionsService(new google.maps.DirectionsService());
     setDirectionsRenderer(new google.maps.DirectionsRenderer());
     mapRef.current = map;
@@ -147,6 +153,7 @@ function MapPage(props: { departPoint: any }): JSX.Element {
         {/* Add locations */}
 
         <Grid item xs={4} style={styles.gridContainer}>
+
           <div className="overlay"></div>
           <div className="functional-content">
             <p className="element">
@@ -158,6 +165,7 @@ function MapPage(props: { departPoint: any }): JSX.Element {
                 addLocation(place);
               }}
               onEnter={(place: any) => addLocation(place)}
+              country={country}
             />
 
             <div style={{ overflowY: "auto", height: "50vh" }}>

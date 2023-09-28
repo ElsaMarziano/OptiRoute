@@ -1,24 +1,28 @@
-import React, { ChangeEventHandler, forwardRef, useState } from "react";
+import React from "react";
 
-import { Button, IconButton, InputBase, Paper } from "@mui/material";
+import { InputBase, Paper } from "@mui/material";
 
-import Autocomplete, { usePlacesWidget } from "react-google-autocomplete";
+import { usePlacesWidget } from "react-google-autocomplete";
 const GOOGLE_API_KEY = "AIzaSyAMuN4NytblrM7MdkXlVu9-j2kt_dFVG4Y";
 
 function PrettyAutocomplete(props: {
   onSelect: Function;
   onEnter: Function;
+  country?: string;
 }): JSX.Element {
+
+  const { onSelect, onEnter, country } = props;
   const { ref, autocompleteRef } = usePlacesWidget({
     apiKey: GOOGLE_API_KEY,
     onPlaceSelected: (selected: any) => {
-      if(selected) onSelect(selected);
+      if (selected) onSelect(selected);
     },
-    options: { types: [] }, //Ensute that not just cities are rendered
-    // TODO Add country restriction  when calling component from MapPage
+    options: { 
+      types: [],  //Ensure that not just cities are rendered
+      componentRestrictions: { country: country ? country : [] } 
+    }
   });
 
-  const { onSelect, onEnter } = props;
 
   return (
     <Paper
@@ -39,7 +43,8 @@ function PrettyAutocomplete(props: {
         onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
           if (event.key == "Enter") {
             event.preventDefault();
-            if (autocompleteRef.current &&
+            if (
+              autocompleteRef.current &&
               autocompleteRef.current.getPlace() &&
               autocompleteRef.current.getPlace().formatted_address
             ) {
