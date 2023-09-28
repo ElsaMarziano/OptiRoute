@@ -22,23 +22,21 @@ const styles = {
 };
 
 function MapPage(props: { departPoint: place }): JSX.Element {
-  const [locations, setLocations] = useState<{ [key: string]: place }>({});
-  const waypoints: google.maps.DirectionsWaypoint[] = [];
-  const mapRef = useRef<any | null>(null); // Type any because can't resolve google.map.Maps
   const { departPoint } = props;
+
+  const [locations, setLocations] = useState<{ [key: string]: place }>({});
+  const [directionsService, setDirectionsService] = useState<google.maps.DirectionsService | null>(null);
+  const [directionsRenderer, setDirectionsRenderer] = useState<google.maps.DirectionsRenderer | null>(null);
+
+  const mapRef = useRef<any | null>(null); // Type any because can't resolve google.map.Maps
+  const waypoints: google.maps.DirectionsWaypoint[] = [];
+
   const country = departPoint.address_components.find((component: {types: string[]}) =>
     component.types.some(type => type === 'country'))?.short_name;
 
 
-
-  const [directionsService, setDirectionsService] =
-    useState<google.maps.DirectionsService | null>(null);
-  const [directionsRenderer, setDirectionsRenderer] =
-    useState<google.maps.DirectionsRenderer | null>(null);
-
-
   function initialize_map(map: google.maps.Map) {
-    console.log(departPoint)
+    // Create directions service and renderer upon loading
     setDirectionsService(new google.maps.DirectionsService());
     setDirectionsRenderer(new google.maps.DirectionsRenderer());
     mapRef.current = map;
@@ -51,6 +49,8 @@ function MapPage(props: { departPoint: place }): JSX.Element {
     }
   }, [directionsRenderer, mapRef.current]);
 
+
+  // Add location to location state
   function addLocation(location: place) {
     setLocations((prev_locations) => ({
       ...prev_locations,
@@ -58,12 +58,14 @@ function MapPage(props: { departPoint: place }): JSX.Element {
     }));
   }
 
+  // Delete location from location state
   function deleteLocation(location: place) {
     let new_locations = { ...locations };
     delete new_locations[location.place_id];
     setLocations(new_locations);
   }
 
+  // Choose closest location
   async function choose_next_location(
     current: place,
     not_visited: { [key: string]: place }
@@ -71,9 +73,10 @@ function MapPage(props: { departPoint: place }): JSX.Element {
     let shortest_result: google.maps.DirectionsResult | null = null;
     let shortest_id: string = "";
 
+    // Async request to get path from origin to destination
     const fetchDirections = async (value: place) => {
+      if(!current) return
       return new Promise<void>((resolve) => {
-        // setTimeout(() => {
         directionsService?.route(
           {
             origin: {
@@ -100,10 +103,10 @@ function MapPage(props: { departPoint: place }): JSX.Element {
             resolve();
           }
         );
-        // }, 0);
       });
     };
 
+    // Calling function to fetch directions for every element in not_visited
     await Promise.all(
       Object.values(not_visited).map(async (value: place) => {
         await fetchDirections(value);
@@ -112,18 +115,22 @@ function MapPage(props: { departPoint: place }): JSX.Element {
     return { shortest_id, shortest_result };
   }
 
+  // BFS algorithm to get shortest path
   async function generatePath() {
+    // Check the user entered locations
     if (Object.keys(locations).length === 0) return;
     let current: place = { ...departPoint };
     let not_visited: { [key: string]: place } = { ...locations };
 
     while (Object.keys(not_visited).length > 0) {
+      // Get next location, add it to waypoints and delete it from not_visited
       let response = await choose_next_location(current, not_visited);
       current = { ...not_visited[response.shortest_id] };
       waypoints.push({location: current.formatted_address})
       delete not_visited[response.shortest_id];
     }
 
+    // Trace route in the correct order
     directionsService?.route(
       {
         origin: {
@@ -139,7 +146,7 @@ function MapPage(props: { departPoint: place }): JSX.Element {
         },
       (result, status) => {
         if (status === google.maps.DirectionsStatus.OK) {
-          directionsRenderer?.setDirections(result);        
+          directionsRenderer?.setDirections(result);  // Trace route      
         }
       }
     );
@@ -153,7 +160,6 @@ function MapPage(props: { departPoint: place }): JSX.Element {
         {/* Add locations */}
 
         <Grid item xs={4} style={styles.gridContainer}>
-
           <div className="overlay"></div>
           <div className="functional-content">
             <p className="element">
@@ -161,10 +167,8 @@ function MapPage(props: { departPoint: place }): JSX.Element {
               click "Generate path".
             </p>
             <PrettyAutocomplete
-              onSelect={(place: any) => {
-                addLocation(place);
-              }}
-              onEnter={(place: any) => addLocation(place)}
+              onSelect={(place: place) => place && addLocation(place)}
+              onEnter={(place: place) => place && addLocation(place)}
               country={country}
             />
 
