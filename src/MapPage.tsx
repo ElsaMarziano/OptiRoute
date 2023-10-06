@@ -130,6 +130,8 @@ function MapPage(props: { departPoint: place }): JSX.Element {
       delete not_visited[response.shortest_id];
     }
 
+    waypoints.pop()
+    
     // Trace route in the correct order
     directionsService?.route(
       {
