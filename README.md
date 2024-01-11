@@ -1,6 +1,6 @@
 OptiRoute
 
-This simple project allows the user to enter a depart point and several locations in the same city, and calculate the shortest path the goes through all locations with the help of a BFS algorithm.
+This simple project allows the user to enter a depart point and several locations in the same city, and calculate the shortest path the goes through all locations with the help of  Dijkstra's algorithm.
 Libraries used: google-maps-react-markers, react-google-autocomplete.
 
 Ideas for future development:
